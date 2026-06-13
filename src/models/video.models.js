@@ -10,7 +10,7 @@ const videoSchema = new Schema({
     type: String,
     required: true,
   },
-  tile: {
+  title: {
     type: String,
     required: true,
   },

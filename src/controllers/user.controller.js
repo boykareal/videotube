@@ -5,9 +5,9 @@ import {User} from "../models/user.models.js"
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
 
 const registerUser = asynchandler( async (req , res) => {
-    const {fullName, email, username, password} = req.body;
+    const {fullName, email, username, password} = req.body || {};
     if(
-        [fullName, username, email, password].some((field)=> field?.trim() === "")){
+        [fullName, username, email, password].some((field)=> !field || field.trim() === "")){
             throw new ApiError(400, "All fields are required")
         }
     
@@ -27,10 +27,13 @@ const registerUser = asynchandler( async (req , res) => {
     }
 
     const avatar = await uploadOnCloudinary(avatarLocalPath)
+    if (!avatar) {
+        throw new ApiError(400, "Avatar upload failed")
+    }
 
     let coverImage = ""
     if(coverLocalPath){
-        coverImage = await uploadOnCloudinary(coverImage);
+        coverImage = await uploadOnCloudinary(coverLocalPath);
     }
 
     const user = await User.create({
