@@ -6,7 +6,7 @@ const errorHandler = (err, req, res, next) => {
     let error = err
 
     if(!(error instanceof ApiError)){
-        const statusCode = error.statusCode || error.statuscode || (error instanceof mongoose.Error ? 400 : 500)
+        const statusCode = error.statusCode || (error instanceof mongoose.Error ? 400 : 500)
 
         const message = error.message || "Something went wrong"
         error = new ApiError(statusCode, message, error?.error || [], err.stack)
@@ -18,7 +18,7 @@ const errorHandler = (err, req, res, next) => {
         ...(process.env.NODE_ENV === 'development' ? {stack: error.stack} : {})
     }
 
-    return res.status(error.statusCode || error.statuscode || 500).json(response)
+    return res.status(error.statusCode || 500).json(response)
 }
 
 export {errorHandler}
