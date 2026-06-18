@@ -99,8 +99,54 @@ const registerUser = asynchandler( async (req , res) => {
 
 })
 
+const loginUser = asynchandler(async (req,res)=> {
+    const {username, email, password} = req.body
+
+    if(!email || !password){
+        return res.status(400).json(new ApiError(400,"Email or password is missing"))
+    }
+
+    const user = await User.findOne({
+        $or: [{username} , {email}]
+    })
+
+    if(!user){
+        throw new ApiError(404,"User not found")
+    }
+
+    const isPasswordCorrect = await user.isPasswordCorrect(password)
+
+    if(!isPasswordCorrect){
+        return res.status(400).json(new ApiError(400, "Invalid credentials"))
+    }
+
+    const {accessToken, refreshToken} = await generateAccessAndRefreshToken(user._id)
+
+    const loggedInUser = await User.findById(user._id)
+    .select(" -password -refreshToken");
+
+    if(!loggedInUser){
+        return res.status(401).json(new ApiError(401, "user is not logged in kindly log in!"))
+    }
+
+    const options = {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production"
+    }
+
+    return res
+    .status(200)
+    .cookie("accessToken",accessToken, options)
+    .cookie("refreshToken",refreshToken,options)
+    .json(new ApiResponse(
+        200, 
+        {user : loggedInUser, accessToken, refreshToken}
+        , "User logged in successfully"))
+})
+
 
 
 export {
-    registerUser
+    registerUser,
+    loginUser
 }
