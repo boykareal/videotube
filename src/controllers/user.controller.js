@@ -5,6 +5,25 @@ import {User} from "../models/user.models.js"
 import { deleteFromClodinary, uploadOnCloudinary } from "../utils/cloudinary.js";
 import mongoose from "mongoose";
 
+const generateAccessAndRefreshToken = async(userId) => {
+    try {
+        const user = await User.findById(userId)
+    
+        if(!user){
+            return res.status(404).json(new ApiError(404, "user not found"))
+        }
+    
+        const accessToken = user.generateAcessToken()
+        const refreshToken = user.generateRefreshToken()
+    
+        user.refreshToken = refreshToken
+        await user.save({validateBeforeSave: false})
+    } catch (error) {
+        throw new ApiError(500, "Something went wrong while generating access Token and refresh Token")
+    }
+}
+
+
 const registerUser = asynchandler( async (req , res) => {
     const {fullname, email, username, password} = req.body || {};
     if(
@@ -79,6 +98,8 @@ const registerUser = asynchandler( async (req , res) => {
     }
 
 })
+
+
 
 export {
     registerUser
