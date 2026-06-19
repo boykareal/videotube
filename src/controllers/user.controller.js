@@ -216,6 +216,38 @@ const refreshAccessToken = asynchandler( async (req,res)=> {
 
 })
 
+const changeCurrentPassword = asynchandler(async (req, res)=> {
+    const {oldPassword, newPassword} = req.body;
+
+    const user = await User.findById(req.user?._id)
+
+    const isPasswordCorrect = user.isPasswordCorrect(oldPassword)
+
+    if(!isPasswordCorrect){
+        throw new ApiError(401, "Old password is incorrect")
+    }
+
+    user.password = newPassword
+
+    await user.save({validateBeforeSave: false})
+
+    return res.status(200).json(new ApiResponse(200, {}, "Password changed successfully"))
+})
+
+const getCurrentUser = asynchandler(async (req, res)=> {
+})
+
+const updateAccountDetails = asynchandler(async (req, res)=> {
+})
+
+const updateUserAvatar = asynchandler(async (req, res)=> {
+})
+
+const updateUserCoverImage = asynchandler(async (req, res)=> {
+})
+
+
+
 
 
 export {
