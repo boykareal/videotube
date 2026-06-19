@@ -239,6 +239,24 @@ const getCurrentUser = asynchandler(async (req, res)=> {
 })
 
 const updateAccountDetails = asynchandler(async (req, res)=> {
+    const {fullname, email} = req.body
+
+    if(!fullname || !email){
+        throw new ApiError(400, "Fullname or email is missing")
+    }
+
+    const user = await User.findByIdAndUpdate(
+        req.user?._id,
+        {
+            $set: {
+                fullname,
+                email
+            }
+        },
+        {new : true}
+    ).select("-password -refreshToken")
+
+    return res.status(200).json(new ApiResponse(200, user, "Account details updated successfully"))
 })
 
 const updateUserAvatar = asynchandler(async (req, res)=> {
